@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Tengo algo que decirte 💌</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <!-- Google Fonts: Quicksand & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    body {
+      font-family: 'Quicksand', 'Outfit', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    /* Fondo degradado nocturno suave */
+    .night-bg {
+      background: radial-gradient(circle at 50% 20%, #291c36 0%, #171324 55%, #0d0a14 100%);
+    }
+
+    /* Tarjeta translúcida con brillo sutil */
+    .glass-card {
+      background: rgba(26, 21, 36, 0.82);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 215, 230, 0.16);
+      box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.6), 0 0 35px rgba(244, 114, 182, 0.1);
+    }
+
+    /* Animación flotante suave */
+    @keyframes gentleFloat {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-7px); }
+    }
+    .animate-float {
+      animation: gentleFloat 3.8s ease-in-out infinite;
+    }
+
+    /* Pulso suave de llamada a la acción */
+    @keyframes tenderPulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(244, 114, 182, 0.45); }
+      50% { transform: scale(1.03); box-shadow: 0 0 22px 6px rgba(244, 114, 182, 0.25); }
+    }
+    .animate-tender-pulse {
+      animation: tenderPulse 2.4s infinite;
+    }
+
+    /* Botón escurridizo con movimiento ágil */
+    #noBtn {
+      transition: left 0.16s cubic-bezier(0.2, 0.8, 0.2, 1), top 0.16s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.12s ease;
+      will-change: left, top, transform;
+    }
+  </style>
+</head>
+<body class="night-bg text-rose-50 min-h-screen w-full overflow-x-hidden overflow-y-auto flex flex-col justify-between items-center relative">
+
+  <!-- Canvas de fondo para flores suaves y pétalos flotantes -->
+  <canvas id="flowerCanvas" class="absolute inset-0 w-full h-full z-0 block pointer-events-auto"></canvas>
+
+  <!-- Pista discreta superior -->
+  <header class="relative z-10 w-full pt-4 px-6 text-center text-xs text-rose-200/65 font-medium">
+    <span class="inline-flex items-center gap-1.5 bg-rose-950/40 px-3.5 py-1.5 rounded-full border border-rose-300/15 backdrop-blur-md">
+      <i data-lucide="sparkles" class="w-3.5 h-3.5 text-pink-300"></i>
+      toca la pantalla para florecer más florecitas
+    </span>
+  </header>
+
+  <!-- Contenedor Central Dinámico -->
+  <main class="relative z-10 w-full max-w-md mx-auto px-5 py-3 flex flex-col items-center justify-center flex-grow">
+
+    <!-- 1. PANTALLA INICIAL (Sobre / Invitación) -->
+    <div id="introScreen" class="flex flex-col items-center justify-center text-center transition-all duration-500 scale-100 opacity-100">
+      
+      <div class="relative mb-6 cursor-pointer group" id="openCardTrigger">
+        <!-- Resplandor exterior -->
+        <div class="absolute -inset-2 bg-gradient-to-r from-pink-500/30 via-rose-400/20 to-purple-500/30 rounded-3xl blur-xl group-hover:opacity-100 transition duration-500"></div>
+        
+        <!-- Botón / Tarjeta del sobre -->
+        <div class="glass-card relative px-8 py-7 rounded-3xl flex flex-col items-center justify-center gap-3 animate-tender-pulse border border-rose-300/30">
+          <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-pink-500/25 to-rose-300/25 border border-pink-300/40 flex items-center justify-center text-3xl shadow-inner">
+            💌
+          </div>
+          <div>
+            <h2 class="text-lg font-bold text-white tracking-wide">Tengo algo que decirte...</h2>
+            <p class="text-xs text-rose-200/75 mt-0.5">Toca aquí para abrir 🌸</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 2. LA CARTA / MENSAJE PRINCIPAL (Inicialmente oculta) -->
+    <div id="letterCard" class="glass-card w-full rounded-3xl p-6 sm:p-8 shadow-2xl relative transition-all duration-700 hidden opacity-0 translate-y-6">
+      
+      <!-- Icono superior tierno -->
+      <div class="flex items-center justify-center mb-4">
+        <div class="w-13 h-13 p-3 rounded-full bg-gradient-to-tr from-pink-500/25 to-rose-300/20 border border-rose-300/30 flex items-center justify-center shadow-inner animate-float text-2xl">
+          🌸
+        </div>
+      </div>
+
+      <!-- Título sincero y dulce -->
+      <h1 class="text-xl sm:text-2xl font-bold text-center text-white mb-4 tracking-tight flex items-center justify-center gap-2">
+        <span>Una disculpa sincera...</span>
+        <span class="text-pink-300 text-lg">✨</span>
+      </h1>
+
+      <!-- Contenido del mensaje -->
+      <div class="space-y-3.5 text-rose-100/95 text-sm sm:text-base leading-relaxed text-center font-normal">
+        <p>
+          Te quería pedir una disculpa de corazón por lo de ayer. Ya te platiqué por audio lo que pasó y por qué me quedé dormido, pero de verdad me dio muchísima pena y me sentí muy mal de haberte dejado jugando sola.
+        </p>
+        <p>
+          Más porque ya habíamos quedado desde un día antes en que nos desvelaríamos jugando juntos... y lo que más coraje me dio conmigo mismo fue que por quedarme dormido ni siquiera te alcancé a avisar.
+        </p>
+        <p class="font-medium text-pink-200 pt-1">
+          Perdóname en serio, no vuelve a pasar 🥺
+        </p>
+      </div>
+
+      <!-- Contenedor de Botones de Respuesta -->
+      <div class="mt-6 pt-4 border-t border-rose-200/15 flex flex-col items-center w-full">
+        
+        <!-- Botón 1: Sí, te perdono (Fijo, visible y protegido arriba) -->
+        <div class="w-full max-w-xs mb-3 z-20">
+          <button id="yesBtn" class="w-full py-3 px-5 rounded-2xl bg-gradient-to-r from-pink-500 to-rose-400 hover:from-pink-600 hover:to-rose-500 text-white font-semibold text-sm transition-all duration-200 shadow-lg shadow-pink-500/30 active:scale-95 flex items-center justify-center gap-2 cursor-pointer">
+            <span>Sí, te perdono 🌸</span>
+          </button>
+        </div>
+
+        <!-- Zona exclusiva delimitada para el botón escurridizo (área ampliada para saltos grandes) -->
+        <div id="noZone" class="w-full relative h-56 sm:h-64 flex items-center justify-center overflow-hidden rounded-2xl bg-white/[0.03] border border-rose-300/10">
+          <button id="noBtn" class="absolute py-2.5 px-4 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 border border-rose-300/25 text-rose-200 text-xs sm:text-sm font-medium transition-all duration-150 active:scale-95 text-center flex items-center justify-center gap-1.5 cursor-pointer select-none">
+            <span id="noBtnText">No te perdono 🙈</span>
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- 3. MODAL DE AGRADECIMIENTO AL PERDONAR -->
+    <div id="modalOverlay" class="fixed inset-0 bg-black/65 backdrop-blur-md z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+      <div id="modalCard" class="glass-card max-w-sm w-full rounded-3xl p-7 text-center transform scale-90 transition-all duration-300 border border-rose-300/35">
+        <div class="text-4xl mb-3">
+          🌸
+        </div>
+        <h3 class="text-xl font-bold text-white mb-2">
+          De verdad, muchas gracias 🙂
+        </h3>
+        <p class="text-rose-100/90 text-sm sm:text-base leading-relaxed mb-6">
+          Te prometo que si algún día me gana el cansancio te aviso con tiempo para no dejarte esperando. Cuando gustes y tengas un tiempecito, jugamos una partida con calma.
+        </p>
+        <button id="closeModalBtn" class="w-full py-3.5 px-5 rounded-2xl bg-gradient-to-r from-pink-500 to-rose-400 hover:from-pink-600 hover:to-rose-500 text-white font-semibold text-sm shadow-lg shadow-pink-500/25 active:scale-95 transition-all">
+          Aceptado 🙂🌸
+        </button>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="relative z-10 py-3 text-center text-xs text-rose-300/50">
+    con mucho cariño para ti 🌸
+  </footer>
+
+  <script>
+    lucide.createIcons();
+
+    // ==========================================
+    // 1. TRANSICIÓN DE INICIO (ABRIR LA CARTA)
+    // ==========================================
+    const introScreen = document.getElementById('introScreen');
+    const openCardTrigger = document.getElementById('openCardTrigger');
+    const letterCard = document.getElementById('letterCard');
+
+    openCardTrigger.addEventListener('click', () => {
+      // Desvanecer la pantalla de bienvenida
+      introScreen.classList.add('opacity-0', 'scale-90');
+      
+      setTimeout(() => {
+        introScreen.style.display = 'none';
+        letterCard.classList.remove('hidden');
+        
+        // Forzar reflow para animación suave
+        void letterCard.offsetWidth;
+        
+        letterCard.classList.remove('opacity-0', 'translate-y-6');
+        letterCard.classList.add('opacity-100', 'translate-y-0');
+      }, 350);
+    });
+
+    // ==========================================
+    // 2. CANVAS DE FLORES Y PÉTALOS FLOTANTES
+    // ==========================================
+    const canvas = document.getElementById('flowerCanvas');
+    const ctx = canvas.getContext('2d');
+    let width = (canvas.width = window.innerWidth);
+    let height = (canvas.height = window.innerHeight);
+
+    window.addEventListener('resize', () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+      createInitialFlowers();
+    });
+
+    // Pétalos cayendo delicadamente
+    const petals = [];
+    for (let i = 0; i < 28; i++) {
+      petals.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        size: Math.random() * 5 + 3.5,
+        speedY: Math.random() * 0.55 + 0.35,
+        speedX: Math.random() * 0.4 - 0.2,
+        angle: Math.random() * Math.PI * 2,
+        rotSpeed: (Math.random() - 0.5) * 0.02,
+        opacity: Math.random() * 0.35 + 0.2
+      });
+    }
+
+    // Tallos y flores interactivas
+    let stems = [];
+    let tapFlowers = [];
+
+    class GardenFlower {
+      constructor(startX, startY, targetX, targetY, delay = 0) {
+        this.startX = startX;
+        this.startY = startY;
+        this.targetX = targetX;
+        this.targetY = targetY;
+        this.cpX = (startX + targetX) / 2 + (Math.random() - 0.5) * 60;
+        this.cpY = (startY + targetY) / 2 + (Math.random() - 0.5) * 40;
+        this.progress = 0;
+        this.delay = delay;
+        this.bloom = 0;
+        this.size = 18 + Math.random() * 10;
+        this.hue = Math.random() > 0.4 ? 340 : 352;
+      }
+      update() {
+        if (this.delay > 0) {
+          this.delay--;
+          return;
+        }
+        if (this.progress < 1) {
+          this.progress += 0.012;
+          if (this.progress > 1) this.progress = 1;
+        } else if (this.bloom < 1) {
+          this.bloom += 0.025;
+          if (this.bloom > 1) this.bloom = 1;
+        }
+      }
+      draw() {
+        if (this.delay > 0) return;
+        const t = this.progress;
+
+        ctx.save();
+        ctx.strokeStyle = 'rgba(74, 185, 120, 0.45)';
+        ctx.lineWidth = 2.8;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(this.startX, this.startY);
+
+        const steps = 24 * t;
+        for (let i = 1; i <= steps; i++) {
+          const st = i / 24;
+          const px = Math.pow(1 - st, 2) * this.startX + 2 * (1 - st) * st * this.cpX + Math.pow(st, 2) * this.targetX;
+          const py = Math.pow(1 - st, 2) * this.startY + 2 * (1 - st) * st * this.cpY + Math.pow(st, 2) * this.targetY;
+          ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+
+        if (this.bloom > 0) {
+          this.drawFlowerHead(this.targetX, this.targetY, this.bloom);
+        }
+        ctx.restore();
+      }
+      drawFlowerHead(x, y, scale) {
+        ctx.save();
+        ctx.translate(x, y);
+        const petalsCount = 6;
+        const s = this.size * scale;
+
+        for (let i = 0; i < petalsCount; i++) {
+          ctx.save();
+          ctx.rotate((i * 2 * Math.PI) / petalsCount);
+          ctx.fillStyle = `hsla(${this.hue}, 85%, 76%, 0.82)`;
+          ctx.beginPath();
+          ctx.ellipse(0, -s * 0.48, s * 0.35, s * 0.5, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+
+        ctx.beginPath();
+        ctx.fillStyle = '#fef08a';
+        ctx.arc(0, 0, s * 0.22, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    class ClickBlossom {
+      constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.scale = 0;
+        this.maxSize = 14 + Math.random() * 12;
+        this.hue = Math.floor(Math.random() * 30) + 330;
+      }
+      update() {
+        if (this.scale < 1) {
+          this.scale += 0.06;
+          if (this.scale > 1) this.scale = 1;
+        }
+      }
+      draw() {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        const s = this.maxSize * this.scale;
+        for (let i = 0; i < 5; i++) {
+          ctx.save();
+          ctx.rotate((i * 2 * Math.PI) / 5);
+          ctx.fillStyle = `hsla(${this.hue}, 90%, 75%, 0.88)`;
+          ctx.beginPath();
+          ctx.ellipse(0, -s * 0.48, s * 0.34, s * 0.52, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+        ctx.beginPath();
+        ctx.fillStyle = '#fde68a';
+        ctx.arc(0, 0, s * 0.24, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    function createInitialFlowers() {
+      stems = [];
+      const originX = width / 2;
+      const originY = height + 10;
+      const count = width < 600 ? 5 : 7;
+      for (let i = 0; i < count; i++) {
+        const spread = (i - (count - 1) / 2) * (width * 0.16);
+        const tx = originX + spread;
+        const ty = height * 0.65 + (Math.random() - 0.5) * 50;
+        stems.push(new GardenFlower(originX, originY, tx, ty, i * 12));
+      }
+    }
+
+    function renderLoop() {
+      ctx.clearRect(0, 0, width, height);
+
+      // Dibujar pétalos cayendo
+      petals.forEach(p => {
+        p.y += p.speedY;
+        p.x += Math.sin(p.angle) * 0.4 + p.speedX;
+        p.angle += p.rotSpeed;
+        if (p.y > height + 10) p.y = -10;
+        if (p.x > width + 10) p.x = -10;
+        if (p.x < -10) p.x = width + 10;
+
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.angle);
+        ctx.fillStyle = `rgba(244, 114, 182, ${p.opacity})`;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, p.size, p.size * 0.6, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      });
+
+      // Dibujar tallos
+      stems.forEach(s => {
+        s.update();
+        s.draw();
+      });
+
+      // Dibujar flores de toque
+      tapFlowers.forEach(f => {
+        f.update();
+        f.draw();
+      });
+
+      requestAnimationFrame(renderLoop);
+    }
+
+    createInitialFlowers();
+    renderLoop();
+
+    function spawnUserFlower(x, y) {
+      tapFlowers.push(new ClickBlossom(x, y));
+      if (tapFlowers.length > 30) tapFlowers.shift();
+    }
+
+    window.addEventListener('click', (e) => {
+      if (e.target.closest('button') || e.target.closest('#openCardTrigger')) return;
+      spawnUserFlower(e.clientX, e.clientY);
+    });
+
+    window.addEventListener('touchstart', (e) => {
+      if (e.target.closest('button') || e.target.closest('#openCardTrigger')) return;
+      const touch = e.touches[0];
+      spawnUserFlower(touch.clientX, touch.clientY);
+    }, { passive: true });
+
+
+    // ==========================================
+    // 3. BOTÓN ESCURRIDIZO ("NO TE PERDONO")
+    // DELIMITADO A SU PROPIA ZONA (NUNCA DETRÁS DEL SÍ)
+    // ==========================================
+    const noBtn = document.getElementById('noBtn');
+    const noBtnText = document.getElementById('noBtnText');
+    const noZone = document.getElementById('noZone');
+
+    const funnyPhrases = [
+      "¡Casi!",
+      "Por aquí no es 😅",
+      "Ese botón no se deja",
+      "Ups, se movió",
+      "¡Intenta con el otro!",
+      "Nop, solo se vale sí 🙂"
+    ];
+    let dodgeCount = 0;
+    let currentX = null;
+    let currentY = null;
+
+    function dodge(e) {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+
+      const zoneW = noZone.clientWidth;
+      const zoneH = noZone.clientHeight;
+      const btnW = noBtn.offsetWidth || 130;
+      const btnH = noBtn.offsetHeight || 38;
+
+      // Margen de seguridad estricto dentro de su contenedor exclusivo
+      const padding = 12;
+      const maxX = Math.max(0, zoneW - btnW - padding * 2);
+      const maxY = Math.max(0, zoneH - btnH - padding * 2);
+
+      // Generar una nueva posición aleatoria con salto amplio garantizado
+      let newX = padding + Math.floor(Math.random() * maxX);
+      let newY = padding + Math.floor(Math.random() * maxY);
+
+      if (currentX !== null && maxX > 60) {
+        let attempts = 0;
+        while (Math.hypot(newX - currentX, newY - currentY) < 70 && attempts < 10) {
+          newX = padding + Math.floor(Math.random() * maxX);
+          newY = padding + Math.floor(Math.random() * maxY);
+          attempts++;
+        }
+      }
+
+      currentX = newX;
+      currentY = newY;
+
+      noBtn.style.left = `${newX}px`;
+      noBtn.style.top = `${newY}px`;
+
+      dodgeCount++;
+      noBtnText.textContent = funnyPhrases[dodgeCount % funnyPhrases.length];
+
+      noBtn.style.transform = 'scale(0.92)';
+      setTimeout(() => {
+        noBtn.style.transform = 'scale(1)';
+      }, 120);
+    }
+
+    // Centrar inicialmente el botón en su pista
+    function initNoBtnPosition() {
+      if (!noZone || !noBtn) return;
+      const zoneW = noZone.clientWidth;
+      const zoneH = noZone.clientHeight;
+      const btnW = noBtn.offsetWidth || 130;
+      const btnH = noBtn.offsetHeight || 38;
+      currentX = Math.max(0, (zoneW - btnW) / 2);
+      currentY = Math.max(0, (zoneH - btnH) / 2);
+      noBtn.style.left = `${currentX}px`;
+      noBtn.style.top = `${currentY}px`;
+    }
+
+    // Ejecutar centrado al abrir la carta
+    openCardTrigger.addEventListener('click', () => {
+      setTimeout(initNoBtnPosition, 400);
+    });
+
+    // Eventos de evasión tanto para escritorio como para móvil
+    noBtn.addEventListener('mouseenter', dodge);
+    noBtn.addEventListener('mouseover', dodge);
+    noBtn.addEventListener('pointerenter', dodge);
+    noBtn.addEventListener('touchstart', dodge, { passive: false });
+    noBtn.addEventListener('pointerdown', dodge, { passive: false });
+    noBtn.addEventListener('click', dodge);
+
+
+    // ==========================================
+    // 4. ACEPTACIÓN: "SÍ, TE PERDONO"
+    // ==========================================
+    const yesBtn = document.getElementById('yesBtn');
+    const modalOverlay = document.getElementById('modalOverlay');
+    const modalCard = document.getElementById('modalCard');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+
+    yesBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+
+      // Ráfaga festiva de confeti y pétalos (el botón "No te perdono" se mantiene visible y funcional)
+      confetti({
+        particleCount: 90,
+        spread: 75,
+        origin: { y: 0.6 },
+        colors: ['#f472b6', '#fb7185', '#fbcfe8', '#fde047', '#ffffff']
+      });
+
+      setTimeout(() => {
+        confetti({
+          particleCount: 55,
+          angle: 60,
+          spread: 60,
+          origin: { x: 0 },
+          colors: ['#f472b6', '#fb7185', '#ffffff']
+        });
+        confetti({
+          particleCount: 55,
+          angle: 120,
+          spread: 60,
+          origin: { x: 1 },
+          colors: ['#f472b6', '#fb7185', '#ffffff']
+        });
+      }, 250);
+
+      // Abrir modal de reconciliación
+      modalOverlay.classList.remove('opacity-0', 'pointer-events-none');
+      modalOverlay.classList.add('opacity-100');
+      modalCard.classList.remove('scale-90');
+      modalCard.classList.add('scale-100');
+    });
+
+    closeModalBtn.addEventListener('click', () => {
+      modalOverlay.classList.add('opacity-0', 'pointer-events-none');
+      modalOverlay.classList.remove('opacity-100');
+      modalCard.classList.add('scale-90');
+      modalCard.classList.remove('scale-100');
+    });
+
+  </script>
+</body>
+</html>
